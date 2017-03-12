@@ -14,6 +14,8 @@ var g_flags struct {
 	path string
 
 	listen string
+
+	gcnum int
 }
 
 func init() {
@@ -23,6 +25,8 @@ func init() {
 
 	flag.StringVar(&g_flags.listen, "listen", ":12138",
 		"$IP:$PORT, 其值将作为 http.Server 的 listen 参数")
+
+	flag.IntVar(&g_flags.gcnum, "gcnum", 3000, "int; 数字越大, gc 频率越低")
 }
 
 var g_idiom_graph *IdiomGraph
@@ -53,7 +57,7 @@ func main() {
 	}
 
 	glog.Info("准备 LoadIdiomGraph")
-	g_idiom_graph, err = LoadIdiomGraph(ifile)
+	g_idiom_graph, err = LoadIdiomGraph(ifile, g_flags.gcnum)
 	if err != nil {
 		panic(err)
 	}

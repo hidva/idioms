@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"runtime"
 	"strings"
 
 	"github.com/gonum/graph/path"
@@ -61,7 +62,7 @@ const (
 
 reader 的格式应该是一行一个成语, 不合法的成语将被忽略.
 */
-func LoadIdiomGraph(input io.Reader) (*IdiomGraph, error) {
+func LoadIdiomGraph(input io.Reader, gcnum int) (*IdiomGraph, error) {
 	// graph_id 存放着下一个 node 的 id.
 	graph_id := 0
 
@@ -89,8 +90,10 @@ func LoadIdiomGraph(input io.Reader) (*IdiomGraph, error) {
 			break
 		}
 	}
+	runtime.GC()
 
 	this.graph = simple.NewDirectedGraph(kSelfWeight, kAbsentWeight)
+	gc_counter := 0
 	for idiom, idiom_node := range this.idioms {
 		idiom_words := []rune(idiom)
 		bword, eword := idiom_words[0], idiom_words[len(idiom_words)-1]
@@ -107,9 +110,17 @@ func LoadIdiomGraph(input io.Reader) (*IdiomGraph, error) {
 		this.bindex[bword] = append(this.bindex[bword], idiom_node)
 		this.eindex[eword] = append(this.eindex[eword], idiom_node)
 		this.beindex[beindex_key] = append(this.beindex[beindex_key], idiom_node)
+
+		gc_counter++
+		if gc_counter >= gcnum {
+			gc_counter = 0
+			runtime.GC()
+		}
 	}
+	runtime.GC()
 
 	this.shortest_paths = path.DijkstraAllPaths(this.graph)
+	runtime.GC()
 	return this, nil
 }
 
