@@ -39,6 +39,8 @@ type IdiomGraph struct {
 	eindex  map[rune][]*IdiomNode
 	beindex map[beIndexKey][]*IdiomNode
 
+	// TODO(pp-qq): 忽然意识到 IdiomGraph 本身就可以作为一个图结构了, 可以直接实现 graph.Graph 的接口了
+	// 而没必要再使用 simple.DirectedGraph 来存储了. 周末可以改一下.
 	graph          *simple.DirectedGraph
 	shortest_paths path.AllShortest
 }
